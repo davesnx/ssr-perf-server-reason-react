@@ -1,19 +1,25 @@
-module Server = Simple_httpd.Server;
-module Response = Simple_httpd.Server.Response;
-module Address = Simple_httpd.Server.Address;
+open Simple_httpd;
 
 let (_args, parameters) = Server.args();
+
+module Params = (val parameters);
+Params.max_connections := 125;
+Params.num_threads := 100;
 
 let listens = [Address.make(~addr="127.0.0.1", ~port=8080, ())];
 let server = Server.create(parameters, ~listens);
 
-/* echo request */
-Server.add_route_handler(server, Server.Route.(exact("echo") @/ return), req =>
-  Response.make_string(Format.asprintf("echo:@ %a@\n@.", Request.pp, req))
+Server.add_route_handler(
+  server,
+  Route.(exact("hi") @/ return),
+  _req => {
+    let html = ReactDOM.renderToStaticMarkup(<Spiral />);
+    Response.make_string(html);
+  },
 );
 
 Array.iter(
-  listener => Printf.printf("listening on http://%s:%d\n%!", listener.addr, listener.port),
+  (listener: Address.t) => Printf.printf("listening on http://%s:%d\n%!", listener.addr, listener.port),
   Server.listens(server),
 );
 
