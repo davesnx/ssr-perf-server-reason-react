@@ -1,60 +1,55 @@
+let wrapperWidth = 960.;
+let wrapperHeight = 720.;
+let cellSize = 10.;
+let centerX = wrapperWidth /. 2.;
+let centerY = wrapperHeight /. 2.;
+
 type tile = {
   x: float,
   y: float,
   id: int,
 };
 
-let wrapperWidth = 960.0;
-let wrapperHeight = 720.0;
-let cellSize = 10.0;
-let centerX = wrapperWidth /. 2.0;
-let centerY = wrapperHeight /. 2.0;
+let generateTiles = () => {
+  let idCounter = ref(0);
+  let angle = ref(0.0);
+  let radius = ref(0.0);
+  let tiles = ref([||]);
+  let step = cellSize;
 
-let createTiles = () => {
-  let rec generateTiles = (angle, radius, idCounter, acc) => {
-    let x = centerX +. Js.Math.cos(angle) *. radius;
-    let y = centerY +. Js.Math.sin(angle) *. radius;
+  while (radius.contents < min(wrapperWidth, wrapperHeight) /. 2.0) {
+    let x = centerX +. cos(angle.contents) *. radius.contents;
+    let y = centerY +. sin(angle.contents) *. radius.contents;
 
-    let newAcc =
-      if (x >= 0.0 && x <= wrapperWidth -. cellSize && y >= 0.0 && y <= wrapperHeight -. cellSize) {
-        [{x, y, id: idCounter}, ...acc];
-      } else {
-        acc;
-      };
-
-    let newRadius = radius +. cellSize *. 0.015;
-
-    if (newRadius < Js.Math.min_float(wrapperWidth, wrapperHeight) /. 2.0) {
-      generateTiles(angle +. 0.2, newRadius, idCounter + 1, newAcc);
-    } else {
-      newAcc;
+    if (x >= 0.0 && x <= wrapperWidth -. cellSize && y >= 0.0 && y <= wrapperHeight -. cellSize) {
+      tiles := Array.append(tiles.contents, [|{x, y, id: idCounter.contents}|]);
+      idCounter := idCounter.contents + 1;
     };
+
+    angle := angle.contents +. 0.2;
+    radius := radius.contents +. step *. 0.015;
   };
 
-  generateTiles(0.0, 0.0, 0, []);
+  tiles.contents;
 };
 
 [@react.component]
 let make = () => {
-  let tiles = createTiles();
+  let tiles = generateTiles();
+  let tileElements =
+    Array.map(
+      tile =>
+        <div
+          className="tile"
+          key={string_of_int(tile.id)}
+          style={ReactDOM.Style.make(
+            ~left=string_of_float(tile.x) ++ "px",
+            ~top=string_of_float(tile.y) ++ "px",
+            (),
+          )}
+        />,
+      tiles,
+    );
 
-  <div id="wrapper">
-    {React.array(
-       Array.of_list(
-         List.map(
-           (tile: tile) =>
-             <div
-               key={string_of_int(tile.id)}
-               className="tile"
-               style={ReactDOM.Style.make(
-                 ~left=string_of_float(tile.x) ++ "px",
-                 ~top=string_of_float(tile.y) ++ "px",
-                 (),
-               )}
-             />,
-           tiles,
-         ),
-       ),
-     )}
-  </div>;
+  <div id="wrapper"> {React.array(tileElements)} </div>;
 };

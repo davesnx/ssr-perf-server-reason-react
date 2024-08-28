@@ -2,7 +2,7 @@
  (name server)
  (public_name perf.server)
  (libraries
-  tiny_httpd
+  simple_httpd
   server-reason-react.react
   server-reason-react.reactDom)
  (preprocess

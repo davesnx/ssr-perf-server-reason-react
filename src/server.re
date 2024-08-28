@@ -1,21 +1,28 @@
-let get = Tiny_httpd.add_route_handler(~meth=`GET);
+open Simple_httpd;
 
-let () = {
-  let server = Tiny_httpd.create();
-  let addr = Tiny_httpd.addr(server);
-  let port = Tiny_httpd.port(server);
+let (_args, parameters) = Server.args();
 
-  get(
-    server,
-    Tiny_httpd.Route.(return),
-    _req => {
-      let html = ReactDOM.renderToString(<Spiral />);
-      Tiny_httpd.Response.make_string(Ok(html));
-    },
-  );
+module Params = (val parameters);
+Params.max_connections := 125;
+Params.num_threads := 120;
+Params.buf_size := 16 * 4_096;
+/* let buf_size = ref (8 * 4_096) */
 
-  switch (Tiny_httpd.run(server, ~after_init=() => Printf.printf("Listening on http://%s:%d\n%!", addr, port))) {
-  | Ok () => ()
-  | Error(e) => raise(e)
-  };
-};
+let listens = [Address.make(~addr="127.0.0.1", ~port=8080, ())];
+let server = Server.create(parameters, ~listens);
+
+Server.add_route_handler(
+  server,
+  Route.(exact("hi") @/ return),
+  _req => {
+    let html = ReactDOM.renderToString(<Spiral />);
+    Response.make_string(html);
+  },
+);
+
+Array.iter(
+  (listener: Address.t) => Printf.printf("listening on http://%s:%d\n%!", listener.addr, listener.port),
+  Server.listens(server),
+);
+
+Server.run(server);
