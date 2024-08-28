@@ -40,7 +40,6 @@ install:
 pin: ## Pin dependencies
 	opam pin add quickjs.dev "https://github.com/ml-in-barcelona/quickjs.ml.git#82044fc532211ac6c7df71fbe879baa2481c9509" -y
 	opam pin add server-reason-react.dev "https://github.com/ml-in-barcelona/server-reason-react.git#fb6836045f4ee56cf42c409f2830674146e0eea4" -y
-	opam pin add simple_httpd.dev "https://github.com/davesnx/simple_httpd.git#7668dd1bcf95e2e04c918b06050ed07b29ffd500" -y
 
 .PHONY: init
 init: create-switch pin install ## Create a local dev enviroment

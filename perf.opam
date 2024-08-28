@@ -10,6 +10,7 @@ depends: [
   "dune" {>= "3.9"}
   "ocaml" {>= "5.0.0"}
   "reason" {>= "3.10.0"}
+  "tiny_httpd" {= "0.16"}
   "ocamlformat" {= "0.26.1" & with-dev-setup}
   "ocaml-lsp-server" {with-dev-setup}
 ]
